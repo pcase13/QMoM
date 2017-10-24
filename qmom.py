@@ -48,27 +48,30 @@ def calc_rw(u):
     return r, w
 
 def sulfuric_acid_water_growth(r, f1):
-    k = 0.000001
+    k = 0.0000000001
     return f1 * k * r
 
-def sulfuric_acid_water_nucleation(r, f1):
-    k = 0.00008
-    r[:] = 1
-    return f1 * k * r
+def sulfuric_acid_water_nucleation(u, f1):
+    k = 1.0
+    r = 1.
+    nuc = np.zeros(len(u))
+    for moment in range(len(u)):
+        nuc[moment] = f1/100000. * k * r ** moment
+    return nuc
 
 
 # Time settings
-run_time = 10. * 60.
+run_time = 100. #10. * 60.
 dt = 1.
 
 # Monomer Settings
-R = 0. # Source
+R = 500. # Source
 S = 0. # Sink
-nucl = 0. # Monomer nucleation
-v1 = 10. # Molecular Volume
+nucl = 1000. # Monomer nucleation
+v1 = 100. # Molecular Volume
 
 # Construct Moment Object
-f1 = 100000.
+f1 = 1000000.
 u = np.zeros(6)
 u[0] = 1. # Number
 u[1] = 5. # nm
@@ -80,15 +83,25 @@ u[5] = 32407.4000
 f1hist = np.zeros(run_time/dt)
 reffhist = np.zeros(run_time/dt)
 uhist = np.zeros((run_time/dt, 6))
+rhist = np.zeros((run_time/dt, 3))
+whist = np.zeros((run_time/dt, 3))
 k = 0
 t = 0.
 while t < run_time:
+    # Check for zeroes
+    if f1 < 0.:
+        f1 = 0.
+    for moment in range(len(u)):
+        if u[moment] < 0.:
+            u[moment] = 0.
     # Record in history
     f1hist[k] = f1
     uhist[k, :] = u[:]
     reffhist[k] = u[3]/u[2]
 
     r, w = calc_rw(u)
+    rhist[k, :] = r[:]
+    whist[k, :] = w[:]
 
     growth_func = sulfuric_acid_water_growth
     growth = np.zeros(6)
@@ -96,8 +109,7 @@ while t < run_time:
     nucleation = np.zeros(6)
     for i in range(6):
         growth[i] = i * np.sum(r**(i-1) * growth_func(r, f1) * w)
-        nucleation[i] = i+1 * np.sum(r**(i-1) * nucleation_func(r, f1) * w)
-
+    nucleation = nucleation_func(u, f1)
     print 'nucleation'
     print nucleation
     print 'growth'
@@ -107,7 +119,6 @@ while t < run_time:
         u[i] += nucleation[i] + growth[i]
     t = t + dt
     k += 1
-
 fig, axs = plt.subplots(6, figsize=(10,10))
 axs[0].plot(f1hist)
 axs[0].set_ylabel('Monomers')
@@ -121,5 +132,21 @@ axs[4].semilogy(uhist[:,3])
 axs[4].set_ylabel('Radial Moment 3')
 axs[5].semilogy(reffhist)
 axs[5].set_ylabel('Effective Radius')
+plt.tight_layout()
+plt.show()
+fig, axs = plt.subplots(4, figsize=(10,10))
+axs[0].plot(f1hist)
+axs[0].set_ylabel('Monomers')
+axs[1].semilogy(uhist[:,0], label='k=0')
+axs[1].set_ylabel('Radial Moments')
+axs[1].semilogy(uhist[:,1], label='k=1')
+axs[1].semilogy(uhist[:,2], label='k=2')
+axs[1].semilogy(uhist[:,3], label='k=3')
+axs[1].legend()
+axs[2].plot(whist)
+axs[2].set_ylabel('Weights')
+axs[3].plot(rhist)
+axs[3].plot(whist)
+axs[3].set_ylabel('Abscissas')
 plt.tight_layout()
 plt.show()
