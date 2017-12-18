@@ -15,6 +15,12 @@ the distribution itself, tracks the radial moments of a distribution. This techn
 
 Usage
 -----
+First, you will need to create all the directories required by the model and scripts:
+
+```
+./init.sh
+```
+
 To use this model, create or select one of the experiment .ini files and run qmom.py as follows:
 
 ```
