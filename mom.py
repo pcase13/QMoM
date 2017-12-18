@@ -11,24 +11,24 @@ S = 0. # Sink per dt
 D = 1.0e-10 # Eddy diffusion coefficient
 ny = 10 # Number of vertical levels
 dt = 1. # Time per timestep
-runtime = 10.*60. # Total time
+runtime = 100#10.*60. # Total time
 v1 = 1.8e-5/Av # Molecular Volume
 v = 1.0e-5 # Windspeed
 nucl = 0.0
-a = 1.0e-11
-b = -1.0e-6
+a = 0
+b = 1.0e-5
 
 f1 = np.zeros(ny) # monomer count
 f1 += 1.0e12
 f1start = np.mean(f1)
 u0 = np.zeros(ny) # Number
-u0 += 0.0
+u0 += 1.0
 u1 = np.zeros(ny) # Radius
-u1 += 0.0
+u1 += 5.0
 u2 = np.zeros(ny) # Surface area
-u2 += 0.0
+u2 += 33.3333
 u3 = np.zeros(ny) # Mass
-u3 += 0.0
+u3 += 277.777778
 f1hist = np.zeros((ny, int(runtime/dt)+1)) # monomer count
 u0hist = np.zeros((ny, int(runtime/dt)+1)) # Number
 u1hist = np.zeros((ny, int(runtime/dt)+1)) #
@@ -37,7 +37,7 @@ u3hist = np.zeros((ny, int(runtime/dt)+1)) # Mass
 reffhist = np.zeros((ny, int(runtime/dt)+1)) # Effective Radius
 Rhist = np.zeros(int(runtime/dt)+1) # Effective Radius
 J = np.zeros(4)
-Jmodifier = 1.0e-5
+Jmodifier = 0#1.0e-5
 J += 0
 
 running = True
@@ -92,30 +92,32 @@ while running:
     j += 1
     if t > runtime:
         running = False
-fig, axs = plt.subplots(6, figsize=(10,10))
-axs[0].plot(f1hist[0,:])
-axs[0].plot(f1hist[1,:])
-axs[0].set_ylabel('Monomers')
-axs[1].semilogy(u0hist[0,:])
-axs[1].semilogy(u0hist[1,:])
-axs[1].set_ylabel('Radial Moment 0')
-axs[2].semilogy(u1hist[0,:])
-axs[2].semilogy(u1hist[1,:])
-axs[2].set_ylabel('Radial Moment 1')
-axs[3].semilogy(u2hist[0,:])
-axs[3].semilogy(u2hist[1,:])
-axs[3].set_ylabel('Radial Moment 2')
-axs[4].semilogy(u3hist[0,:])
-axs[4].semilogy(u3hist[1,:])
-axs[4].set_ylabel('Radial Moment 3')
-axs[5].semilogy(reffhist[0,:])
-axs[5].semilogy(reffhist[1,:])
-axs[5].set_ylabel('Effective Radius (m)')
+fig, axs = plt.subplots(5, figsize=(10,10))
+axs[0].plot(u0hist[0,:], color='#268BD2')
+axs[0].plot(u0hist[1,:], color='#268BD2')
+axs[0].set_ylabel('Radial Moment 0')
+axs[0].set_yticklabels(axs[0].get_yticks())
+axs[1].plot(u1hist[0,:], color='#268BD2')
+axs[1].plot(u1hist[1,:], color='#268BD2')
+axs[1].set_ylabel('Radial Moment 1')
+axs[1].set_yticklabels(axs[1].get_yticks())
+axs[2].plot(u2hist[0,:], color='#268BD2')
+axs[2].plot(u2hist[1,:], color='#268BD2')
+axs[2].set_ylabel('Radial Moment 2')
+axs[2].set_yticklabels(axs[2].get_yticks())
+axs[3].plot(u3hist[0,:], color='#268BD2')
+axs[3].plot(u3hist[1,:], color='#268BD2')
+axs[3].set_ylabel('Radial Moment 3')
+axs[3].set_yticklabels(axs[3].get_yticks())
+axs[4].plot(reffhist[0,:], color='#268BD2')
+axs[4].plot(reffhist[1,:], color='#268BD2')
+axs[4].set_ylabel('Effective Radius (micron)')
+axs[4].set_yticklabels(axs[4].get_yticks())
 plt.tight_layout()
-plt.show()
+plt.savefig('mom_moments.png')
 plt.contourf(reffhist)
 plt.colorbar()
 plt.xlabel('timestep')
 plt.ylabel('y')
 plt.tight_layout()
-plt.show()
+plt.savefig('mom_spatial.png')
