@@ -35,7 +35,7 @@ def sulfuric_acid_water_nucleation(u, f1):
         nuc[moment] = (f1/f1norm) * k * r ** moment
     return nuc
 
-def sed_func(r):
+def sedimentation(r):
     k = 1.0e9
     g = 9.8e9 #nm/s2
     density = 1.84e-24 #kg/nm3

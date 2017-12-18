@@ -1,0 +1,66 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import sys
+
+sim_name = sys.argv[1]
+save_prefix = 'plots/' + sim_name + '_'
+load_prefix = 'data/' + sim_name + '_'
+
+uhist = np.load(load_prefix + 'uhist.npy')
+rhist = np.load(load_prefix + 'rhist.npy')
+whist = np.load(load_prefix + 'whist.npy')
+f1hist = np.load(load_prefix + 'f1hist.npy')
+reffhist = np.load(load_prefix + 'reffhist.npy')
+grwhist = np.load(load_prefix + 'grwhist.npy')
+nuchist = np.load(load_prefix + 'nuchist.npy')
+sedhist = np.load(load_prefix + 'sedhist.npy')
+
+
+fig, axs = plt.subplots(5, figsize=(10,10))
+axs[0].plot(uhist[:,0], color='red')
+axs[0].set_ylabel('Radial Moment 0')
+axs[0].set_yticklabels(axs[0].get_yticks())
+axs[1].plot(uhist[:,1], color='red')
+axs[1].set_ylabel('Radial Moment 1')
+axs[1].set_yticklabels(axs[1].get_yticks())
+axs[2].plot(uhist[:,2], color='red')
+axs[2].set_ylabel('Radial Moment 2')
+axs[2].set_yticklabels(axs[2].get_yticks())
+axs[3].plot(uhist[:,3], color='red')
+axs[3].set_ylabel('Radial Moment 3')
+axs[3].set_yticklabels(axs[3].get_yticks())
+axs[4].plot(reffhist, color='red')
+axs[4].set_ylabel('Effective Radius (micron)')
+axs[4].set_yticklabels(axs[4].get_yticks())
+plt.ticklabel_format()
+plt.tight_layout()
+plt.savefig(save_prefix + 'moments.png')
+
+fig, axs = plt.subplots(3, figsize=(10,10))
+axs[0].plot(uhist[:,0], label='k=0')
+axs[0].plot(uhist[:,1], label='k=1')
+axs[0].plot(uhist[:,2], label='k=2')
+axs[0].plot(uhist[:,3], label='k=3')
+axs[0].plot(uhist[:,4], label='k=4')
+axs[0].plot(uhist[:,5], label='k=5')
+axs[0].set_ylabel('Radial Moments')
+axs[0].legend(loc='center')
+axs[0].set_yscale('log')
+axs[1].plot(whist)
+axs[1].set_ylabel('Weights')
+axs[2].plot(rhist)
+axs[2].set_ylabel('Abscissas')
+plt.tight_layout()
+plt.savefig(save_prefix + 'u.png')
+
+fig, axs = plt.subplots(4, figsize=(10,10))
+axs[0].plot(sedhist)
+axs[0].set_ylabel('Sedimentation')
+axs[1].plot(nuchist)
+axs[1].set_ylabel('Nucleation')
+axs[2].plot(grwhist)
+axs[2].set_ylabel('Growth')
+axs[3].plot(reffhist)
+axs[3].set_ylabel('Effective Radius')
+plt.tight_layout()
+plt.savefig(save_prefix + 'process.png')
