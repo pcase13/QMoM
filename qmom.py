@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
-import ConfigParser
+import configparser
 from utils import calc_rw
 from dictionaries import func_dict
 from testing_utils import khrgian, analytical_solution_1
@@ -10,17 +10,18 @@ Av = 6.022140857e23 #Avogadro's #
 # General Settings
 analytical_solution = False
 sim_name = sys.argv[1]
-config = ConfigParser.ConfigParser()
+config = configparser.ConfigParser()
 config.read('experiments/' + sim_name + '.ini')
 
 # Time settings
 run_time = float(config.get('OPTIONS', 'RUN_TIME'))
 dt = float(config.get('OPTIONS', 'DT'))
+steps = int(run_time/dt)
 
 # Monomer Settings
-inf_monomer = config.get('OPTIONS', 'INF_MONOMER') # If true, monomer field remains unchanged
+inf_monomer = config.getboolean('OPTIONS', 'INF_MONOMER') # If true, monomer field remains unchanged
 f1 = 1.1e30 # Initial Monomer Count
-R = 1.0e25 # Monomer Source
+R = 0 # Monomer Source
 S = 0. # Monomer Sink
 v1 = 18.4/Av # Molecular Volume
 
@@ -39,16 +40,16 @@ sedimentation_func = func_dict[config.get('OPTIONS', 'SED_FUNC')]
 nucleation_func = func_dict[config.get('OPTIONS', 'NUC_FUNC')]
 
 # Construct history objects
-f1hist = np.zeros(run_time/dt)
-reffhist = np.zeros(run_time/dt)
-uhist = np.zeros((run_time/dt, 6))
-rhist = np.zeros((run_time/dt, 3))
-whist = np.zeros((run_time/dt, 3))
-nuchist = np.zeros((run_time/dt, 6))
-sedhist = np.zeros((run_time/dt, 6))
-grwhist = np.zeros((run_time/dt, 6))
+f1hist = np.zeros(steps)
+reffhist = np.zeros(steps)
+uhist = np.zeros((steps, 6))
+rhist = np.zeros((steps, 3))
+whist = np.zeros((steps, 3))
+nuchist = np.zeros((steps, 6))
+sedhist = np.zeros((steps, 6))
+grwhist = np.zeros((steps, 6))
 if analytical_solution is True:
-    ansohist = np.zeros((run_time/dt, 6))
+    ansohist = np.zeros((steps, 6))
 
 # Initiate time loop
 k = 0
@@ -80,6 +81,7 @@ while t < run_time:
     # Calculate moment equation changes with abscissas, weights
     for i in range(6):
         growth[i] =  i * np.sum(r**(i-1) * growth_func(r, f1) * w)
+        #growth[i] =  np.sum(r**(i-1) * growth_func(r, f1) * w)
         sedimentation[i] = np.sum(r**(i+1) * sedimentation_func(r) * w)
     nucleation = nucleation_func(u, f1)
 
@@ -89,7 +91,7 @@ while t < run_time:
     nuchist[k, :] = nucleation[:]
 
     # Change array values
-    if inf_monomer is not True:
+    if not inf_monomer:
         f1 += R - S - (4*np.pi/v1) * (nucleation[3] + growth[3])
     for i in range(6):
         u[i] += nucleation[i] + growth[i] - sedimentation[i]
