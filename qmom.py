@@ -18,6 +18,9 @@ run_time = float(config.get('OPTIONS', 'RUN_TIME'))
 dt = float(config.get('OPTIONS', 'DT'))
 steps = int(run_time/dt)
 
+# History settings
+history_names = [item for key, item in config.items('EXPORTS')]
+
 # Monomer Settings
 inf_monomer = config.getboolean('OPTIONS', 'INF_MONOMER') # If true, monomer field remains unchanged
 f1 = 1.1e30 # Initial Monomer Count
@@ -26,13 +29,7 @@ S = 0. # Monomer Sink
 v1 = 18.4/Av # Molecular Volume
 
 # Construct Moment Object
-u = np.zeros(6)
-u[0] = 1.0 # Number
-u[1] = 5.0 # First moment (micron)
-u[2] = 33.3333 # Second moment (micron^2)
-u[3] = 277.7778 # Third moment (micron^3)
-u[4] = 2777.7778 # Fourth moment (micron^4)
-u[5] = 32407.4000 # Fifth moment (micron^5)
+u = np.asarray([float(item) for key, item in config.items('INITIAL_CONDITIONS')])
 
 # Assign moment moment functions
 growth_func = func_dict[config.get('OPTIONS', 'GRW_FUNC')]
@@ -48,6 +45,8 @@ whist = np.zeros((steps, 3))
 nuchist = np.zeros((steps, 6))
 sedhist = np.zeros((steps, 6))
 grwhist = np.zeros((steps, 6))
+histories = [f1hist, reffhist, uhist, rhist, whist, nuchist, sedhist, grwhist]
+possible_exports = ['f1', 'reff', 'u', 'r', 'w', 'nuc', 'sed', 'grw']
 if analytical_solution is True:
     ansohist = np.zeros((steps, 6))
 
@@ -80,8 +79,8 @@ while t < run_time:
 
     # Calculate moment equation changes with abscissas, weights
     for i in range(6):
-        growth[i] =  i * np.sum(r**(i-1) * growth_func(r, f1) * w)
-        #growth[i] =  np.sum(r**(i-1) * growth_func(r, f1) * w)
+        #growth[i] =  i * np.sum(r**(i-1) * growth_func(r, f1) * w)
+        growth[i] =  np.sum(r**(i-1) * growth_func(r, f1) * w)
         sedimentation[i] = np.sum(r**(i+1) * sedimentation_func(r) * w)
     nucleation = nucleation_func(u, f1)
 
@@ -112,13 +111,16 @@ while t < run_time:
 
 # Save histories
 save_prefix = 'data/' + sim_name + '_'
-np.save(save_prefix + 'uhist.npy', uhist)
-np.save(save_prefix + 'f1hist.npy', f1hist)
-np.save(save_prefix + 'rhist.npy', rhist)
-np.save(save_prefix + 'whist.npy', whist)
-np.save(save_prefix + 'reffhist.npy', reffhist)
-np.save(save_prefix + 'grwhist.npy', grwhist)
-np.save(save_prefix + 'sedhist.npy', sedhist)
-np.save(save_prefix + 'nuchist.npy', nuchist)
+for history, name in zip(histories, possible_exports):
+    if name in history_names:
+        np.save(save_prefix + name + 'hist.npy', history)
 if analytical_solution is True:
     np.save(save_prefix + 'ansohist.npy', ansohist)
+#np.save(save_prefix + 'uhist.npy', uhist)
+#np.save(save_prefix + 'f1hist.npy', f1hist)
+#np.save(save_prefix + 'rhist.npy', rhist)
+#np.save(save_prefix + 'whist.npy', whist)
+#np.save(save_prefix + 'reffhist.npy', reffhist)
+#np.save(save_prefix + 'grwhist.npy', grwhist)
+#np.save(save_prefix + 'sedhist.npy', sedhist)
+#np.save(save_prefix + 'nuchist.npy', nuchist)

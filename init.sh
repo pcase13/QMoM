@@ -1,9 +1,9 @@
 #!/bin/sh
 
-if [! -d "$plots" ]; then
+if [ ! -d "$plots" ]; then
     mkdir plots
 fi
 
-if [! -d "$data" ]; then
+if [ ! -d "$data" ]; then
     mkdir data
 fi
